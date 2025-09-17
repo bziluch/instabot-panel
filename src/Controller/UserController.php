@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\UserPasswordUpdateType;
+use App\Form\UserType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -47,8 +48,35 @@ class UserController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        return $this->render('user/change-password.html.twig', [
+        return $this->render('user/form.html.twig', [
             'form' => $form->createView(),
+            'title' => "Zmień hasło"
+        ]);
+    }
+
+    #[Route(path: '/admin/user/add', name: 'app_add_user', methods: ['GET', 'POST'])]
+    public function add(
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $entityManager,
+        Request $request,
+    ): Response {
+
+        $form = $this->createForm(UserType::class, $user = new User());
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $hashedPassword = $passwordHasher->hashPassword($user, '123456');
+            $user->setPassword($hashedPassword);
+            $user->setRoles(['ROLE_USER']);
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+            return $this->redirectToRoute('app_user_list');
+        }
+
+        return $this->render('user/form.html.twig', [
+            'form' => $form->createView(),
+            'title' => 'Dodaj użytkownika',
         ]);
     }
 }
