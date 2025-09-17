@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lista użytkowników{% endblock %}
+
+{% block body %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">l.p.</th>
+            <th scope="col">E-mail</th>
+            <th scope="col">Data dodania</th>
+            <th scope="col">Subskrypcja</th>
+            <th scope="col">Poziom dostępu</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if users|length > 0 %}
+            {% for user in users %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>{{ user.email }}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>{{ user.roles|join(", ") }}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="5">
+                Brak danych do wyświetlenia
+            </td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+{% endblock %}
