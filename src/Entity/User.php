@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -32,6 +34,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, IgAccount>
+     */
+    #[ORM\OneToMany(targetEntity: IgAccount::class, mappedBy: 'User')]
+    private Collection $igAccounts;
+
+    public function __construct()
+    {
+        $this->igAccounts = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -106,5 +119,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, IgAccount>
+     */
+    public function getIgAccounts(): Collection
+    {
+        return $this->igAccounts;
+    }
+
+    public function addIgAccount(IgAccount $igAccount): static
+    {
+        if (!$this->igAccounts->contains($igAccount)) {
+            $this->igAccounts->add($igAccount);
+            $igAccount->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIgAccount(IgAccount $igAccount): static
+    {
+        if ($this->igAccounts->removeElement($igAccount)) {
+            // set the owning side to null (unless already changed)
+            if ($igAccount->getUser() === $this) {
+                $igAccount->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }
