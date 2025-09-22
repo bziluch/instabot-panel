@@ -15,6 +15,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\IdenticalTo;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class UserPasswordUpdateType extends AbstractType
@@ -37,7 +38,7 @@ class UserPasswordUpdateType extends AbstractType
                 'first_options'  => ['label' => 'Nowe hasło'],
                 'second_options' => ['label' => 'Powtórz nowe hasło'],
                 'invalid_message' => 'Hasła nie zgadzają się',
-                'constraints' => [new NotBlank()],
+                'constraints' => [new NotBlank(), new Length(['min' => 8, 'max' => 24])],
             ])
             ->add('save', SubmitType::class, [
                 'label' => 'Zmień hasło'

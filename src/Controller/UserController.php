@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\UserPasswordUpdateType;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Util\PasswordUtil;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -65,12 +66,19 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $hashedPassword = $passwordHasher->hashPassword($user, '123456');
+            $password = PasswordUtil::generateRandomPassword();
+
+            $hashedPassword = $passwordHasher->hashPassword($user, $password);
             $user->setPassword($hashedPassword);
             $user->setRoles(['ROLE_USER']);
 
             $entityManager->persist($user);
             $entityManager->flush();
+
+            $this->addFlash('success', sprintf(
+                'Użytkownik został dodany! Hasło: %s',
+                $password
+            ));
             return $this->redirectToRoute('app_user_list');
         }
 
