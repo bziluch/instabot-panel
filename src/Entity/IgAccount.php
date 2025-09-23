@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\IgAccountRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: IgAccountRepository::class)]
@@ -34,6 +36,17 @@ class IgAccount
     #[ORM\Column]
     private ?bool $active = null;
 
+    /**
+     * @var Collection<int, Schedule>
+     */
+    #[ORM\OneToMany(targetEntity: Schedule::class, mappedBy: 'igAccount')]
+    private Collection $schedules;
+
+    public function __construct()
+    {
+        $this->schedules = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -53,7 +66,7 @@ class IgAccount
 
     public function getUsername(): ?string
     {
-        return $this->usernameDecrypted;
+        return $this->usernameDecrypted ?? $this->username;
     }
 
     public function setUsername(string $username, bool $enc = false): static
@@ -82,7 +95,7 @@ class IgAccount
 
     public function getLinkedAccount(): ?string
     {
-        return $this->linkedAccountDecrypted;
+        return $this->linkedAccountDecrypted ?? $this->linkedAccount;
     }
 
     public function setLinkedAccount(string $linkedAccount, bool $enc = false): static
@@ -122,5 +135,35 @@ class IgAccount
     public function hasUsernameChanged(): bool
     {
         return $this->usernameChanged;
+    }
+
+    /**
+     * @return Collection<int, Schedule>
+     */
+    public function getSchedules(): Collection
+    {
+        return $this->schedules;
+    }
+
+    public function addSchedule(Schedule $schedule): static
+    {
+        if (!$this->schedules->contains($schedule)) {
+            $this->schedules->add($schedule);
+            $schedule->setIgAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSchedule(Schedule $schedule): static
+    {
+        if ($this->schedules->removeElement($schedule)) {
+            // set the owning side to null (unless already changed)
+            if ($schedule->getIgAccount() === $this) {
+                $schedule->setIgAccount(null);
+            }
+        }
+
+        return $this;
     }
 }

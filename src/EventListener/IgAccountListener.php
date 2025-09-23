@@ -9,8 +9,8 @@ use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 
-#[AsEntityListener(event: Events::preFlush, method: 'onPreFlush', entity: IgAccount::class)]
-#[AsEntityListener(event: Events::postLoad, method: 'onPostLoad', entity: IgAccount::class)]
+//#[AsEntityListener(event: Events::preFlush, method: 'onPreFlush', entity: IgAccount::class)]
+//#[AsEntityListener(event: Events::postLoad, method: 'onPostLoad', entity: IgAccount::class)]
 readonly class IgAccountListener
 {
     public function __construct(
