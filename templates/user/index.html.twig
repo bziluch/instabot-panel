@@ -3,6 +3,10 @@
 {% block title %}Lista użytkowników{% endblock %}
 {% block pageTitle %}Lista użytkowników{% endblock %}
 
+{% block buttons %}
+    <a href="{{ path('app_add_user') }}" class="btn btn-sm btn-warning">Dodaj użytkownika</a>
+{% endblock buttons %}
+
 {% block content %}
     <table class="table">
         <thead>

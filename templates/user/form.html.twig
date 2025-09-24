@@ -1,9 +1,10 @@
-{% extends 'base.html.twig' %}
+{% extends 'dashboard.html.twig' %}
 
 {% block title %}{{ title }}{% endblock %}
+{% block pageTitle %}{{ title }}{% endblock %}
 
-{% form_theme form 'bootstrap_base_layout.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-{% block body %}
+{% block content %}
     {{ form(form) }}
 {% endblock %}
