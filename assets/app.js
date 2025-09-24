@@ -7,6 +7,6 @@ import './bootstrap.js';
  */
 import './styles/app.scss';
 
-require('bootstrap');
+require('bootstrap/dist/js/bootstrap.bundle');
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
