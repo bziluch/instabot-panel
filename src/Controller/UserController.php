@@ -49,7 +49,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        return $this->render('user/form.html.twig', [
+        return $this->render('default/form.html.twig', [
             'form' => $form->createView(),
             'title' => "Zmień hasło"
         ]);
@@ -82,7 +82,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('app_user_list');
         }
 
-        return $this->render('user/form.html.twig', [
+        return $this->render('default/form.html.twig', [
             'form' => $form->createView(),
             'title' => 'Dodaj użytkownika',
         ]);

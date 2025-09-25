@@ -89,6 +89,7 @@ class IgAccount
     public function setPassword(string $password): static
     {
         $this->password = $password;
+        $this->passwordChanged = true;
 
         return $this;
     }
