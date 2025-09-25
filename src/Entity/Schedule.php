@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ScheduleRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -29,6 +31,17 @@ class Schedule
 
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $status = null;
+
+    /**
+     * @var Collection<int, AccostedAccounts>
+     */
+    #[ORM\OneToMany(targetEntity: AccostedAccounts::class, mappedBy: 'schedule')]
+    private Collection $accostedAccounts;
+
+    public function __construct()
+    {
+        $this->accostedAccounts = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -91,6 +104,36 @@ class Schedule
     public function setStatus(int $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AccostedAccounts>
+     */
+    public function getAccostedAccounts(): Collection
+    {
+        return $this->accostedAccounts;
+    }
+
+    public function addAccostedAccount(AccostedAccounts $accostedAccount): static
+    {
+        if (!$this->accostedAccounts->contains($accostedAccount)) {
+            $this->accostedAccounts->add($accostedAccount);
+            $accostedAccount->setSchedule($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAccostedAccount(AccostedAccounts $accostedAccount): static
+    {
+        if ($this->accostedAccounts->removeElement($accostedAccount)) {
+            // set the owning side to null (unless already changed)
+            if ($accostedAccount->getSchedule() === $this) {
+                $accostedAccount->setSchedule(null);
+            }
+        }
 
         return $this;
     }
