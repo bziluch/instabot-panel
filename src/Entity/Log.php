@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: LogRepository::class)]
 class Log
 {
+    const ACTION_INSERT = 0;
+    const ACTION_UPDATE = 1;
+    const ACTION_DELETE = 2;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -28,6 +32,24 @@ class Log
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: Types::SMALLINT)]
+    private ?int $action = null;
+
+    public function __construct(
+        string $entityClass,
+        int $entityId,
+        int $action,
+        array $changes,
+        ?User $user
+    ) {
+        $this->entityClass = $entityClass;
+        $this->entityId = $entityId;
+        $this->action = $action;
+        $this->changes = $changes;
+        $this->user = $user;
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
@@ -90,6 +112,18 @@ class Log
     public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getAction(): ?int
+    {
+        return $this->action;
+    }
+
+    public function setAction(int $action): static
+    {
+        $this->action = $action;
 
         return $this;
     }

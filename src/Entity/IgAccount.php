@@ -8,12 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: IgAccountRepository::class)]
-class IgAccount
+class IgAccount extends LoggableEntity
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'igAccounts')]
     #[ORM\JoinColumn(nullable: false)]
@@ -45,11 +41,6 @@ class IgAccount
     public function __construct()
     {
         $this->schedules = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getUser(): ?User
