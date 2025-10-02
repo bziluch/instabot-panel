@@ -1,0 +1,86 @@
+{% extends 'dashboard.html.twig' %}
+
+{% block title %}Logi{% endblock %}
+{% block pageTitle %}Logi{% endblock %}
+
+
+{% block content %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Data</th>
+            <th>Użytkownik</th>
+            <th>Encja</th>
+            <th>Akcja</th>
+            <th>Zmiany</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+            <tr>
+                <td>{{ log.createdAt|date('Y-m-d H:i') }}</td>
+                <td>{{ log.user ? log.user.email : 'system' }}</td>
+                <td>{{ log.entityClass }} #{{ log.entityId }}</td>
+                <td>
+                    {% if log.action == 0 %}
+                        <span class="badge bg-success">Dodanie</span>
+                    {% elseif log.action == 1 %}
+                        <span class="badge bg-primary">Edycja</span>
+                    {% elseif log.action == 2 %}
+                        <span class="badge bg-danger">Usunięcie</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <!-- przycisk otwierający modal -->
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#logModal{{ log.id }}">
+                        Zobacz zmiany
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    {% for log in logs %}
+
+        <!-- Modal ze szczegółami -->
+    <div class="modal fade" id="logModal{{ log.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Zmiany w {{ log.entityClass }} #{{ log.entityId }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {% if log.changes %}
+                        <table class="table table-sm">
+                            <thead>
+                            <tr>
+                                <th>Pole</th>
+                                <th>Przed</th>
+                                <th>Po</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for field, diff in log.changes %}
+                                <tr>
+                                    <td>{{ field }}</td>
+                                    <td>{{ diff.old is not iterable ? diff.old : diff.old|json_encode }}</td>
+                                    <td>{{ diff.new is not iterable ? diff.new : diff.new|json_encode }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <em>Brak zmian</em>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endblock %}
