@@ -34,7 +34,11 @@ class LoggableEntityListener
         $meta = $args->getObjectManager()->getClassMetadata(get_class($entity));
         $changes = [];
         foreach ($meta->getFieldNames() as $field) {
-            $changes[$field] = ['old' => null, 'new' => $meta->getFieldValue($entity, $field)];
+            if ($field != 'password') {
+                $changes[$field] = ['old' => null, 'new' => $meta->getFieldValue($entity, $field)];
+            } else {
+                $changes[$field] = ['old' => null, 'new' => "*****"];
+            }
         }
 
         $this->pendingLogs[spl_object_hash($entity)] = [
@@ -54,7 +58,11 @@ class LoggableEntityListener
     {
         $changes = [];
         foreach ($args->getEntityChangeSet() as $field => [$old, $new]) {
-            $changes[$field] = ['old' => $old, 'new' => $new];
+            if ($field != 'password') {
+                $changes[$field] = ['old' => $old, 'new' => $new];
+            } else {
+                $changes[$field] = ['old' => "*****", 'new' => "*****"];
+            }
         }
 
         if ($changes) {
@@ -85,7 +93,11 @@ class LoggableEntityListener
 
         $changes = [];
         foreach ($meta->getFieldNames() as $field) {
-            $changes[$field] = ['old' => $meta->getFieldValue($entity, $field), 'new' => null];
+            if ($field != 'password') {
+                $changes[$field] = ['old' => $meta->getFieldValue($entity, $field), 'new' => null];
+            } else {
+                $changes[$field] = ['old' => "*****", 'new' => null];
+            }
         }
 
         $this->pendingLogs[spl_object_hash($entity)] = [

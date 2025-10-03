@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 class IgAccountController extends AbstractController
@@ -20,7 +19,7 @@ class IgAccountController extends AbstractController
         IgAccountRepository $igAccountRepository,
     ) : Response {
 
-        $igAccounts = $igAccountRepository->findBy($this->isGranted('ROLE_ADMIN') ? [] : ['user' => $this->getUser()]);
+        $igAccounts = $igAccountRepository->findBy($this->isGranted('ROLE_ADMIN') ? [] : ['User' => $this->getUser()]);
 
         return $this->render('ig-account/index.html.twig', ['accounts' => $igAccounts]);
     }

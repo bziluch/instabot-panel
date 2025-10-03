@@ -7,9 +7,10 @@ use App\Service\EncryptionService;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
 use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
+use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Events;
 
-#[AsEntityListener(event: Events::preFlush, method: 'onPreFlush', entity: IgAccount::class)]
+#[AsEntityListener(event: Events::prePersist, method: 'onPrePersist', entity: IgAccount::class, priority: 500)]
 #[AsEntityListener(event: Events::postLoad, method: 'onPostLoad', entity: IgAccount::class)]
 readonly class IgAccountListener
 {
@@ -17,7 +18,7 @@ readonly class IgAccountListener
         private EncryptionService $encryptionService,
     ) {}
 
-    public function onPreFlush(IgAccount $igAccount, PreFlushEventArgs $eventArgs)
+    public function onPrePersist(IgAccount $igAccount, PrePersistEventArgs $eventArgs)
     {
         if ($igAccount->hasUsernameChanged()) {
             $igAccount->setUsername($this->encryptionService->encrypt($igAccount->getUsername()), true);
