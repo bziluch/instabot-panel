@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AccostedAccounts;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,72 @@ class AccostedAccountsRepository extends ServiceEntityRepository
         parent::__construct($registry, AccostedAccounts::class);
     }
 
-    //    /**
-    //     * @return AccostedAccounts[] Returns an array of AccostedAccounts objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    private const SUCCESS_STATUSES = [
+        AccostedAccounts::STATUS_RELATIONS_SUCCESS,
+        AccostedAccounts::STATUS_LIKES_SUCCESS,
+        AccostedAccounts::STATUS_SUCCESS,
+    ];
 
-    //    public function findOneBySomeField($value): ?AccostedAccounts
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Liczba zaczepionych kont danego użytkownika w konkretnym dniu.
+     */
+    public function countByDay(User $user, \DateTimeInterface $date): int
+    {
+        $start = (clone $date)->setTime(0, 0, 0);
+        $end = (clone $date)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->join('a.schedule', 's')
+            ->join('s.igAccount', 'ia')
+            ->where('ia.User = :user')
+            ->andWhere('a.status IN (:statuses)')
+            ->andWhere('s.date BETWEEN :start AND :end')
+            ->setParameter('user', $user)
+            ->setParameter('statuses', self::SUCCESS_STATUSES)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Liczba zaczepionych kont danego użytkownika w konkretnym miesiącu.
+     */
+    public function countByMonth(User $user, \DateTimeInterface $month): int
+    {
+        $start = (clone $month)->modify('first day of this month')->setTime(0, 0, 0);
+        $end = (clone $month)->modify('last day of this month')->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->join('a.schedule', 's')
+            ->join('s.igAccount', 'ia')
+            ->where('ia.User = :user')
+            ->andWhere('a.status IN (:statuses)')
+            ->andWhere('s.date BETWEEN :start AND :end')
+            ->setParameter('user', $user)
+            ->setParameter('statuses', self::SUCCESS_STATUSES)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Łączna liczba zaczepionych kont danego użytkownika.
+     */
+    public function countTotal(User $user): int
+    {
+        return $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->join('a.schedule', 's')
+            ->join('s.igAccount', 'ia')
+            ->where('ia.User = :user')
+            ->andWhere('a.status IN (:statuses)')
+            ->setParameter('user', $user)
+            ->setParameter('statuses', self::SUCCESS_STATUSES)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
