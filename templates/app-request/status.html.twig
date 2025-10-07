@@ -1,0 +1,15 @@
+{% extends 'dashboard.html.twig' %}
+
+{% block title %}Status konta IG{% endblock %}
+{% block pageTitle %}Status logowania konta IG{% endblock %}
+
+{% block content %}
+    <div class="container mt-5" data-controller="app-request-status"
+         data-app-request-status-id-value="{{ appRequest.id }}"
+         data-app-request-status-url-value="{{ path('app_request_status', {id: appRequest.id}) }}"
+    >
+        <div class="alert alert-secondary mt-3" id="status-box">
+            Oczekiwanie na odpowiedź z aplikacji...
+        </div>
+    </div>
+{% endblock %}

@@ -52,7 +52,7 @@ class IgAccountController extends AbstractController
 
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_igaccount_list');
+            return $this->redirectToRoute('app_request_view', ['id' => $appRequest->getId()]);
         }
 
         return $this->render('default/form.html.twig', [
