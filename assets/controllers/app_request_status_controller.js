@@ -9,6 +9,7 @@ export default class extends Controller {
     connect() {
         console.log(`[Stimulus] Start polling request #${this.idValue}`)
         this.pollInterval = setInterval(() => this.checkStatus(), 5000) // co 5s
+        this.twofaForm = document.getElementById('twofa-form')
         this.checkStatus() // natychmiast pierwsze sprawdzenie
     }
 
@@ -37,6 +38,7 @@ export default class extends Controller {
                 } else if (res.need_2fa === true) {
                     statusBox.className = "alert alert-warning"
                     statusBox.innerText = "⚠️ Wymagany kod 2FA!"
+                    this.twofaForm.classList.remove('d-none');
                 } else {
                     statusBox.className = "alert alert-danger"
                     statusBox.innerText = "❌ Nie udało się zalogować!"

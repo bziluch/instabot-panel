@@ -5,11 +5,17 @@ namespace App\Entity;
 use App\Repository\IgAccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: IgAccountRepository::class)]
 class IgAccount extends LoggableEntity
 {
+
+    const STATUS_UNVERIFIED = 0;
+    const STATUS_VERIFIED = 1;
+    const STATUS_UNSUCCESSFUL = 2;
+    const STATUS_CONNECTION_BROKEN = 3;
 
     #[ORM\ManyToOne(inversedBy: 'igAccounts')]
     #[ORM\JoinColumn(nullable: false)]
@@ -37,6 +43,12 @@ class IgAccount extends LoggableEntity
      */
     #[ORM\OneToMany(targetEntity: Schedule::class, mappedBy: 'igAccount')]
     private Collection $schedules;
+
+    #[ORM\Column(type: Types::SMALLINT)]
+    private ?int $status = self::STATUS_UNVERIFIED;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $session = null;
 
     public function __construct()
     {
@@ -155,6 +167,30 @@ class IgAccount extends LoggableEntity
                 $schedule->setIgAccount(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getStatus(): ?int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getSession(): ?string
+    {
+        return $this->session;
+    }
+
+    public function setSession(?string $session): static
+    {
+        $this->session = $session;
 
         return $this;
     }
