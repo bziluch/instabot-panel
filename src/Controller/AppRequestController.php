@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\AppRequest;
+use App\Entity\IgAccount;
 use App\Form\TwoFaType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -59,4 +60,25 @@ class AppRequestController extends AbstractController
             'appRequest' => $appRequest,
         ]);
     }
+
+    #[Route('/request/finalize/{id}', name: 'app_request_finalize', methods: ['GET'])]
+    public function finalize(
+        AppRequest $appRequest,
+        EntityManagerInterface $entityManager
+    ): Response {
+
+        $responseData = json_decode($appRequest->getResponse(), true);
+        $appRequest->setStatus(AppRequest::STATUS_CLOSED);
+        $igAccount = $appRequest->getAccount();
+
+        if (!empty($responseData['success']) && $responseData['success'] === true) {
+            $igAccount->setStatus(IgAccount::STATUS_VERIFIED);
+        } else {
+            $igAccount->setStatus(IgAccount::STATUS_UNSUCCESSFUL);
+        }
+
+        $entityManager->flush();
+        return $this->redirectToRoute('app_igaccount_list');
+    }
+
 }

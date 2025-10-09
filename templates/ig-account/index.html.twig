@@ -18,7 +18,8 @@
             {% endif %}
             <th scope="col">Śledzone konto</th>
             <th scope="col">Aktywne</th>
-            <th scope="col"></th>
+            <th scope="col">Status połączenia</th>
+            <th scope="col">Akcje</th>
         </tr>
         </thead>
         <tbody>
@@ -31,8 +32,31 @@
                         <td>{{ account.user.email }}</td>
                     {% endif %}
                     <td>{{ account.linkedAccount }}</td>
-                    <td>{{ account.active ? "TAK" : "NIE" }}</td>
-                    <td></td>
+                    <td>{{ account.active ? "<span class='badge bg-info text-dark'>TAK</span>" : "<span class='badge bg-secondary'>NIE</span>" }}</td>
+                    <td>
+                        {% if account.status == 1 %}
+                            <span class="badge bg-success">Połączono</span>
+                        {% elseif account.status == 2 %}
+                            <span class="badge bg-danger">Niepowodzenie</span>
+                        {% elseif account.status == 3 %}
+                            <span class="badge bg-warning text-dark">Połączenie przerwane</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Niezweryfikowane</span>
+                        {% endif %}
+
+                    </td>
+                    <td>
+                        {% if account.lastAppRequest and account.lastAppRequest.status != 2 %}
+                            <a class="btn btn-sm btn-warning" href="{{ path('app_request_view', {id: account.lastAppRequest.id}) }}">Sprawdź połączenie</a>
+                        {% else %}
+                            <a class="btn btn-sm btn-secondary" href="{{ path('app_igaccount_edit', {id: account.id}) }}">Edytuj dane konta</a>
+                        {% endif %}
+{#                        {% if account.active %}#}
+{#                            <a class="btn btn-sm btn-danger">Ustaw jako nieaktywne</a>#}
+{#                        {% else %}#}
+{#                            <a class="btn btn-sm btn-success">Ustaw jako aktywne</a>#}
+{#                        {% endif %}#}
+                    </td>
                 </tr>
             {% endfor %}
         {% else %}

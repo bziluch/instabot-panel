@@ -25,22 +25,40 @@ class IgAccountController extends AbstractController
     }
 
     #[Route('/ig-account/add', name: 'app_igaccount_add')]
+    #[Route('/ig-account/edit/{id}', name: 'app_igaccount_edit')]
     public function form(
         Request $request,
         EntityManagerInterface $entityManager,
         IgAccountRepository $igAccountRepository,
+        int $id = null
     ) : Response {
 
-        $form = $this->createForm(IgAccountType::class, $igAccount = new IgAccount());
+        if ($id) {
+            $igAccount = $igAccountRepository->find($id);
+            if (!$this->isGranted('ROLE_ADMIN') && $igAccount->getUser()->getId() !== $this->getUser()->getId()) {
+                $this->addFlash('error', 'Brak uprawnień do edycji konta');
+                return $this->redirectToRoute('app_igaccount_list');
+            }
+        } else {
+            $igAccount = new IgAccount();
+        }
+
+        $form = $this->createForm(IgAccountType::class, $igAccount);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $igAccount->setUser($user = $this->getUser());
-            $igAccount->setActive(true);
+//            if ($id) {
+//                $igAccount->notifyPasswordChange();
+//            }
 
-            if (null !== ($oldAccount = $igAccountRepository->findOneBy(['User' => $user, 'active' => true]))) {
+            $igAccount->setUser($user = $this->getUser());
+
+            if (null !== ($oldAccount = $igAccountRepository->findOneBy(['User' => $user, 'active' => true]))
+                && $oldAccount->getId() !== $igAccount->getId()
+            ) {
                 $oldAccount->setActive(false);
+                $igAccount->setActive(true);
             }
 
             $entityManager->persist($igAccount);
@@ -59,25 +77,5 @@ class IgAccountController extends AbstractController
             'form' => $form->createView(),
             'title' => "Dodaj konto IG"
         ]);
-    }
-
-    #[Route('/ig-account/{id}/check-connection', name: 'app_igaccount_check_connection')]
-    public function checkConnection(
-        IgAccountRepository $igAccountRepository,
-        int $id
-    ) : Response {
-
-        if (null == ($igAccount = $igAccountRepository->find($id)) || $igAccount->getUser()->getId() !== $this->getUser()->getId()) {
-            $this->addFlash('error', 'Konto IG nie istnieje');
-            return $this->redirectToRoute('app_igaccount_list');
-        }
-
-        dd('work in progress...');
-
-        /*
-         * TODO: Async do sprawdzania statusu połączenia z IG
-         * TODO: Formularz w przypadku kodu sms/email
-         * TODO: Komunikacja z workerem w pythonie
-         */
     }
 }

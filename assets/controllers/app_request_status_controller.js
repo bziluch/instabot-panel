@@ -10,6 +10,7 @@ export default class extends Controller {
         console.log(`[Stimulus] Start polling request #${this.idValue}`)
         this.pollInterval = setInterval(() => this.checkStatus(), 5000) // co 5s
         this.twofaForm = document.getElementById('twofa-form')
+        this.submitBtn = document.getElementById('submit-btn')
         this.checkStatus() // natychmiast pierwsze sprawdzenie
     }
 
@@ -35,6 +36,7 @@ export default class extends Controller {
                 if (res.success === true) {
                     statusBox.className = "alert alert-success"
                     statusBox.innerText = "✅ Logowanie zakończone sukcesem!"
+                    this.submitBtn.classList.remove('d-none');
                 } else if (res.need_2fa === true) {
                     statusBox.className = "alert alert-warning"
                     statusBox.innerText = "⚠️ Wymagany kod 2FA!"
@@ -42,6 +44,7 @@ export default class extends Controller {
                 } else {
                     statusBox.className = "alert alert-danger"
                     statusBox.innerText = "❌ Nie udało się zalogować!"
+                    this.submitBtn.classList.remove('d-none');
                 }
 
                 clearInterval(this.pollInterval)

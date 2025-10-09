@@ -14,7 +14,10 @@
             Oczekiwanie na odpowiedź z aplikacji...
         </div>
     </div>
-    <div id="twofa-form" class="d-none">
-        {{ form(form) }}
+    <div class="container">
+        <div id="twofa-form" class="d-none">
+            {{ form(form) }}
+        </div>
+        <a class="btn btn-primary d-none" id="submit-btn" href="{{ path('app_request_finalize', {id: appRequest.id}) }}">Zapisz i wróć</a>
     </div>
 {% endblock %}

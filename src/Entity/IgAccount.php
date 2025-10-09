@@ -42,6 +42,7 @@ class IgAccount extends LoggableEntity
      * @var Collection<int, Schedule>
      */
     #[ORM\OneToMany(targetEntity: Schedule::class, mappedBy: 'igAccount')]
+    #[ORM\JoinColumn(nullable: false)]
     private Collection $schedules;
 
     #[ORM\Column(type: Types::SMALLINT)]
@@ -50,9 +51,16 @@ class IgAccount extends LoggableEntity
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $session = null;
 
+    /**
+     * @var Collection<int, AppRequest>
+     */
+    #[ORM\OneToMany(targetEntity: AppRequest::class, mappedBy: 'account')]
+    private Collection $appRequests;
+
     public function __construct()
     {
         $this->schedules = new ArrayCollection();
+        $this->appRequests = new ArrayCollection();
     }
 
     public function getUser(): ?User
@@ -193,5 +201,23 @@ class IgAccount extends LoggableEntity
         $this->session = $session;
 
         return $this;
+    }
+
+//    /**
+//     * @return Collection<int, AppRequest>
+//     */
+//    private function getAppRequests(): Collection
+//    {
+//        return $this->appRequests;
+//    }
+
+    public function getLastAppRequest(): AppRequest|bool
+    {
+        return $this->appRequests->last();
+    }
+
+    public function notifyPasswordChange(): void
+    {
+        $this->passwordChanged = true;
     }
 }
