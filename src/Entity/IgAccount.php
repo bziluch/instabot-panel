@@ -36,7 +36,7 @@ class IgAccount extends LoggableEntity
     private bool $linkedAccountChanged = false;
 
     #[ORM\Column]
-    private ?bool $active = null;
+    private ?bool $active = false;
 
     /**
      * @var Collection<int, Schedule>
