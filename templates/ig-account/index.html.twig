@@ -46,10 +46,12 @@
 
                     </td>
                     <td>
-                        {% if account.lastAppRequest and account.lastAppRequest.status != 2 %}
-                            <a class="btn btn-sm btn-warning" href="{{ path('app_request_view', {id: account.lastAppRequest.id}) }}">Sprawdź połączenie</a>
-                        {% else %}
-                            <a class="btn btn-sm btn-secondary" href="{{ path('app_igaccount_edit', {id: account.id}) }}">Edytuj dane konta</a>
+                        {% if app.user == account.user %}
+                            {% if account.lastAppRequest and account.lastAppRequest.status != 2 %}
+                                <a class="btn btn-sm btn-warning" href="{{ path('app_request_view', {id: account.lastAppRequest.id}) }}">Sprawdź połączenie</a>
+                            {% else %}
+                                <a class="btn btn-sm btn-secondary" href="{{ path('app_igaccount_edit', {id: account.id}) }}">Edytuj dane konta</a>
+                            {% endif %}
                         {% endif %}
 {#                        {% if account.active %}#}
 {#                            <a class="btn btn-sm btn-danger">Ustaw jako nieaktywne</a>#}
