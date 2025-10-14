@@ -97,8 +97,12 @@ class IgAccount extends LoggableEntity
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(?string $password): static
     {
+        if (!$password) {
+            return $this;
+        }
+
         $this->password = $password;
         $this->passwordChanged = true;
 
