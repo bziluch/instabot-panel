@@ -57,6 +57,9 @@ class IgAccount extends LoggableEntity
     #[ORM\OneToMany(targetEntity: AppRequest::class, mappedBy: 'account')]
     private Collection $appRequests;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lastAccId = null;
+
     public function __construct()
     {
         $this->schedules = new ArrayCollection();
@@ -223,5 +226,17 @@ class IgAccount extends LoggableEntity
     public function notifyPasswordChange(): void
     {
         $this->passwordChanged = true;
+    }
+
+    public function getLastAccId(): ?string
+    {
+        return $this->lastAccId;
+    }
+
+    public function setLastAccId(?string $lastAccId): static
+    {
+        $this->lastAccId = $lastAccId;
+
+        return $this;
     }
 }
