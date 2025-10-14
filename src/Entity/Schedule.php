@@ -11,6 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ScheduleRepository::class)]
 class Schedule
 {
+    const STATUS_NEW = 0;
+    const STATUS_RUNNING = 1;
+    const STATUS_FINISHED = 2;
+    const STATUS_ERROR = 3;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

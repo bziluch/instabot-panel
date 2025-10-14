@@ -14,13 +14,18 @@ class IgAccountType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $passwordAttr = [
+            'label' => 'Hasło do konta na IG',
+        ];
+        if (!$options['new']) {
+            $passwordAttr['required'] = false;
+        }
+
         $builder
             ->add('username', TextType::class, [
                 'label' => 'Nazwa konta na IG',
             ])
-            ->add('password', PasswordType::class, [
-                'label' => 'Hasło do konta na IG',
-            ])
+            ->add('password', PasswordType::class, $passwordAttr)
             ->add('linkedAccount', TextType::class, [
                 'label' => 'Konto z którego będą pobierani obserwujący',
             ])
@@ -35,6 +40,7 @@ class IgAccountType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => IgAccount::class,
+            'new' => true
         ]);
     }
 }

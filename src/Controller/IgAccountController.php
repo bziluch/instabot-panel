@@ -41,9 +41,10 @@ class IgAccountController extends AbstractController
             }
         } else {
             $igAccount = new IgAccount();
+            $igAccount->setActive(true);
         }
 
-        $form = $this->createForm(IgAccountType::class, $igAccount);
+        $form = $this->createForm(IgAccountType::class, $igAccount, ['new' => null == $id]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

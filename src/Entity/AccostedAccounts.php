@@ -15,6 +15,7 @@ class AccostedAccounts
     const STATUS_RELATIONS_SUCCESS = 3;
     const STATUS_LIKES_SUCCESS = 4;
     const STATUS_SUCCESS = 5;
+    const STATUS_EMPTY = 6;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
