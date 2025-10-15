@@ -9,13 +9,15 @@ use App\Service\ScheduleService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:generate-schedules',
-    description: 'Add a short description for your command',
+    description: 'Generuje harmonogramy dla kont Instagramowych (wszystkich lub konkretnego użytkownika)',
 )]
 class GenerateSchedulesCommand extends Command
 {
@@ -27,33 +29,69 @@ class GenerateSchedulesCommand extends Command
         parent::__construct();
     }
 
+    protected function configure(): void
+    {
+        $this
+            ->addOption('user', 'u', InputOption::VALUE_OPTIONAL, 'ID konta IG (jeśli podane, generuje tylko dla tego konta)')
+            ->addOption('time', 't', InputOption::VALUE_OPTIONAL, 'Dzień generowania: today lub tomorrow (domyślnie tomorrow)');
+
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $dateTomorrow = new \DateTimeImmutable('tomorrow');
 
-        $igAccounts = $this->igAccountRepository->findAll();
-        $io->info("Found ".count($igAccounts)." accounts");
+        $userId = $input->getOption('user');
+        $day = $input->getOption('time') ?? 'tomorrow';
+
+        if (!in_array($day, ['today', 'tomorrow'], true)) {
+            $io->error("Niepoprawna wartość argumentu <time>. Użyj 'today' lub 'tomorrow'.");
+            return Command::FAILURE;
+        }
+
+        $date = new \DateTimeImmutable($day);
+        $dateFormatted = $date->format('Y-m-d');
+
+        // Pobieramy konta
+        if ($userId) {
+            $account = $this->igAccountRepository->find($userId);
+            if (!$account) {
+                $io->error("Nie znaleziono konta o ID: {$userId}");
+                return Command::FAILURE;
+            }
+            $igAccounts = [$account];
+            $io->info("Generowanie schedule dla użytkownika ID {$userId} na dzień {$dateFormatted}");
+        } else {
+            $igAccounts = $this->igAccountRepository->findAll();
+            $io->info("Generowanie schedule dla wszystkich (" . count($igAccounts) . " kont) na dzień {$dateFormatted}");
+        }
+
+        if (empty($igAccounts)) {
+            $io->warning('Brak kont do przetworzenia.');
+            return Command::SUCCESS;
+        }
 
         $progressBar = new ProgressBar($output, count($igAccounts));
         $progressBar->start();
 
         /** @var IgAccount $igAccount */
         foreach ($igAccounts as $igAccount) {
-
-            if (null != $schedule = $this->scheduleRepository->existsForDay($dateTomorrow, $igAccount)) {
-
+            // Sprawdzamy, czy dany dzień ma już schedule
+            if ($this->scheduleRepository->existsForDay($date, $igAccount)) {
                 $progressBar->advance();
-                $io->warning($igAccount->getUsername()." already has schedule for ".$dateTomorrow->format('Y-m-d')." - skipping");
+                $io->warning($igAccount->getUsername() . " już ma schedule dla {$dateFormatted} – pomijam");
                 continue;
             }
 
-            $this->scheduleService->generateSchedule($igAccount);
+            // Generujemy schedule
+            $this->scheduleService->generateSchedule($igAccount, day: $day);
             $progressBar->advance();
         }
 
         $progressBar->finish();
-        $io->success('Schedules generated successfully!');
+        $io->newLine(2);
+        $io->success("Schedule wygenerowane pomyślnie dla dnia {$dateFormatted}");
+
         return Command::SUCCESS;
     }
 }

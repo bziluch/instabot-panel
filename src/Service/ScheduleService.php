@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-
 use App\Entity\Schedule;
 use App\Entity\IgAccount;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,36 +13,36 @@ readonly class ScheduleService
     ) {}
 
     /**
-     * Tworzy harmonogram na następny dzień
+     * Tworzy harmonogram na dany dzień (dzisiaj lub jutro)
      *
      * @param IgAccount $account konto IG, dla którego tworzymy schedule
-     * @param int $targetAmount docelowa suma amount (domyślnie 500)
-     * @param int $minSchedules minimalna liczba schedule w dobie (np. 15)
-     * @param int $maxSchedules maksymalna liczba schedule w dobie (np. 25)
+     * @param int $targetAmount docelowa suma amount (domyślnie 300)
+     * @param int $minSchedules minimalna liczba schedule w dobie (domyślnie 6)
+     * @param int $maxSchedules maksymalna liczba schedule w dobie (domyślnie 8)
+     * @param string $day określa dzień: 'today' lub 'tomorrow' (domyślnie 'tomorrow')
      *
      * @return Schedule[] wygenerowane schedule
      */
     public function generateSchedule(
         IgAccount $account,
-        int $targetAmount = 500,
-        int $minSchedules = 15,
-        int $maxSchedules = 25
+        int $targetAmount = 300,
+        int $minSchedules = 6,
+        int $maxSchedules = 8,
+        string $day = 'tomorrow'
     ): array {
         $schedules = [];
 
         $count = random_int($minSchedules, $maxSchedules);
         $amounts = $this->splitTargetAmount($targetAmount, $count);
 
-        $nextDay = (new \DateTimeImmutable('tomorrow'))->setTime(0, 0, 0);
+        $baseDay = new \DateTimeImmutable($day === 'today' ? 'today' : 'tomorrow');
+        $baseDay = $baseDay->setTime(0, 0, 0);
+
         $usedTimes = [];
 
         for ($i = 0; $i < $count; $i++) {
-            do {
-                $date = $this->getRandomTimeInDay($nextDay);
-                $timeKey = $date->format('H:i');
-            } while (in_array($timeKey, $usedTimes, true));
-
-            $usedTimes[] = $timeKey;
+            $date = $this->getRandomTimeWithSpacing($baseDay, $usedTimes, 120); // 120 minut = 2h
+            $usedTimes[] = $date;
 
             $schedule = (new Schedule())
                 ->setIgAccount($account)
@@ -61,21 +60,35 @@ readonly class ScheduleService
         return $schedules;
     }
 
-    private function getRandomTimeInDay(\DateTimeImmutable $day): \DateTimeImmutable
-    {
-        $minutesInDay = 24 * 60;
-        $randomMinute = random_int(0, $minutesInDay / 5 - 1) * 5;
+    /**
+     * Losuje godzinę w obrębie dnia z minimalnym odstępem między losowaniami
+     */
+    private function getRandomTimeWithSpacing(
+        \DateTimeImmutable $day,
+        array $usedTimes,
+        int $minSpacingMinutes
+    ): \DateTimeImmutable {
+        $attempts = 0;
+        do {
+            $attempts++;
+            $minutesInDay = 24 * 60;
+            $randomMinute = random_int(0, $minutesInDay / 5 - 1) * 5;
+            $candidate = $day->setTime(intdiv($randomMinute, 60), $randomMinute % 60);
 
-        return $day->setTime(
-            intdiv($randomMinute, 60),
-            $randomMinute % 60,
-            0
-        );
+            $tooClose = false;
+            foreach ($usedTimes as $used) {
+                if (abs($candidate->getTimestamp() - $used->getTimestamp()) < ($minSpacingMinutes * 60)) {
+                    $tooClose = true;
+                    break;
+                }
+            }
+        } while ($tooClose && $attempts < 200);
+
+        return $candidate;
     }
 
     private function splitTargetAmount(int $target, int $count): array
     {
-        // losowe wagi
         $weights = [];
         for ($i = 0; $i < $count; $i++) {
             $weights[] = random_int(1, 100);
@@ -83,7 +96,6 @@ readonly class ScheduleService
 
         $sumWeights = array_sum($weights);
 
-        // oblicz amount proporcjonalnie
         $amounts = [];
         $allocated = 0;
         for ($i = 0; $i < $count; $i++) {
@@ -92,7 +104,6 @@ readonly class ScheduleService
             $allocated += $value;
         }
 
-        // korekta różnicy (żeby suma == target)
         $diff = $target - $allocated;
         if ($diff !== 0) {
             $amounts[0] += $diff;
